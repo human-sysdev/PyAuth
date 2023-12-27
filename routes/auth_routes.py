@@ -49,9 +49,7 @@ def github_request_identity_callback(provider: str):
         return "unsupported provider", 401
     user = user_handler(login_request)
 
-
-    # TODO we now have a token, next up is creating a user from the token
-    # and we should also set a session value to identify the user i thinks
+    # create a session for the user
 
     return f"""
     <img src='{user.pfp}' />
