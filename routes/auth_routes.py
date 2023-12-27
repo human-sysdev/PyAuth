@@ -1,23 +1,22 @@
 import flask
-import auth.github
-
+import providers.github
 
 auth_blueprint = flask.Blueprint("auth_blueprint", __name__)
 
 SIGNIN_URL_GENERATORS = {
-    "github": auth.github.get_signin_url,
+    "github": providers.github.get_signin_url,
 }
 
 CODE_HANDLER_GENERATORS = {
-    "github": auth.github.append_signin_code,
+    "github": providers.github.append_signin_code,
 }
 
 TOKEN_RETRIEVER_GENERATORS = {
-    "github": auth.github.retrieve_github_token,
+    "github": providers.github.retrieve_github_token,
 }
 
 USER_RETRIEVER_GENERATORS = {
-    "github": auth.github.get_github_user,
+    "github": providers.github.get_github_user,
 }
 
 
