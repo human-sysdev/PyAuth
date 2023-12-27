@@ -35,6 +35,7 @@ def github_request_identity_callback(provider: str):
     code_handler = CODE_HANDLER_GENERATORS.get(provider)
     if not code_handler:
         return "unsupported provider", 401
+    
     login_request = code_handler(flask.request)
     if not login_request:
         return "something went wrong"
@@ -42,12 +43,18 @@ def github_request_identity_callback(provider: str):
     token_handler = TOKEN_RETRIEVER_GENERATORS.get(provider)
     if not token_handler:
         return "unsupported provider", 401
+    
     login_request = token_handler(login_request)
+    if not login_request:
+        return "something went wrong"
 
     user_handler = USER_RETRIEVER_GENERATORS.get(provider)
     if not user_handler:
         return "unsupported provider", 401
+    
     user = user_handler(login_request)
+    if not user:
+        return "something went wrong"
 
     # create a session for the user
 
