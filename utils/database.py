@@ -26,9 +26,13 @@ class Database:
         expires_at = sql.Column(sql.DateTime, default=lambda: datetime.datetime.utcnow() + datetime.timedelta(hours=1))
     
     class User(Base):
+        """
+        snowflake → f"{provider}{provider_id}"
+        """
         __tablename__ = "user"
         id = sql.Column(sql.Integer, unique=True, primary_key=True)
-        email = sql.Column(sql.String, unique=True)
+        snowflake = sql.Column(sql.String, unique=True)
+        email = sql.Column(sql.String)
         pfp = sql.Column(sql.String)
         username = sql.Column(sql.String)
         provider = sql.Column(sql.String)
@@ -63,25 +67,34 @@ class Database:
 
     def update_login_request(self, login_request: LoginRequest) -> LoginRequest | None:
         if not login_request.id:
-            RuntimeError("DB: Tried Updating request state of non-existent ID")
+            RuntimeError("DB: Tried Updating LoginRequest with non-existent ID")
         with self.SessionMaker() as session:
             session.add(login_request)
             session.commit()
         return login_request
     
-    def get_user_by_email(self, email: str) -> User | None:
+    def get_user_by_snowflake(self, snowflake: str) -> User | None:
         with self.SessionMaker() as session:
-            user = session.query(self.User).where(self.User.email == email).first()
+            user = session.query(self.User).where(self.User.snowflake == snowflake).first()
         return user
     
-    def create_new_user(self, email: str, pfp: str, provider: str, username: str) -> User | None:
-        if self.get_user_by_email(email):
+    def update_user(self, user: User):
+        if not user.id:
+            RuntimeError("DB: Tried Updating User with non-existent ID")
+        with self.SessionMaker() as session:
+            session.add(user)
+            session.commit()
+        return user
+    
+    def create_new_user(self, email: str, pfp: str, provider: str, username: str, snowflake: str) -> User | None:
+        if self.get_user_by_snowflake(snowflake):
             return None
         user = self.User()
         user.email = email
         user.pfp = pfp
         user.provider = provider
         user.username = username
+        user.snowflake = snowflake
         with self.SessionMaker() as session:
             session.add(user)
             session.commit()

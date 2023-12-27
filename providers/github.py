@@ -86,8 +86,20 @@ def get_github_user(login_request: utils.database.Database.LoginRequest):
     pfp = user_info.get("avatar_url")
     username = user_info.get("login")
     provider = "github"
+    provider_id = user_info.get("id")
+    snowflake = f"{provider}{provider_id}"
 
-    user = utils.database.Database().get_user_by_email(email)
+    user = utils.database.Database().get_user_by_snowflake(snowflake)
     if not user:
-        user = utils.database.Database().create_new_user(email=email, pfp=pfp, provider=provider, username=username)
+        user = utils.database.Database().create_new_user(
+            email=email, 
+            pfp=pfp, 
+            provider=provider, 
+            username=username, 
+            snowflake=snowflake)
+        return user
+    user.email = email
+    user.pfp = pfp
+    user.username = username
+    user = utils.database.Database().update_user(user)
     return user
