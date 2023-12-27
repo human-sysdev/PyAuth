@@ -75,12 +75,11 @@ def get_github_user(login_request: utils.database.Database.LoginRequest):
     user_info = dict(user_info.json())
     user_emails = list([dict(entry) for entry in list(user_emails.json())])
 
-    email: str
-    for entry in user_emails:
-        if entry.get("primary") == True:
-            email = entry.get("email")
-    else:
-        email = user_emails[0].get("email")
+    email: str = next(
+        (entry.get("email") for entry in user_emails if entry.get("primary") == True), 
+        user_emails[0].get("email")
+        )
+    
     if not email:
         return None
     
