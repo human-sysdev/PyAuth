@@ -1,0 +1,2 @@
+docker build -t nyandoggo/py-auth:1.0 .
+docker run --env-file .\.env -v .\dev.db:/app/dev.db -p 3000:3000 --name py_auth nyandoggo/py-auth:1.0

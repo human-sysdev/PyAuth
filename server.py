@@ -19,6 +19,6 @@ server.register_blueprint(routes.identity_routes.identity_blueprint)
 if __name__ == "__main__":
     if os.getenv("ENVIRONMENT") == "DEV":
         server.debug == True
-        server.run(port=3000)
+        server.run(port=3000, host="0.0.0.0")
     else:
-        waitress.serve(server)
+        waitress.serve(server, port=3000, host="0.0.0.0")
