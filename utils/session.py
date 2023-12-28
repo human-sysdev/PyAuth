@@ -4,7 +4,7 @@ import utils.crypt
 import utils.database
 
 
-def create_new_session(user: utils.database.Database.User) -> utils.database.Database.Session | None:
+def create_user_server_session(user: utils.database.Database.User) -> utils.database.Database.Session | None:
     server_session_user_id = user.id
     server_session_value = utils.crypt.random_string()
     server_session = utils.database.Database().create_new_session(
@@ -14,7 +14,7 @@ def create_new_session(user: utils.database.Database.User) -> utils.database.Dat
     return server_session
 
 
-def create_user_session_dict(session_value: str) -> dict | None:
+def get_user_server_session(session_value: str) -> dict | None:
     server_session = utils.database.Database().get_session_from_value(session_value)
     if not server_session:
         return None

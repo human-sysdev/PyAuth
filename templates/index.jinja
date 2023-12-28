@@ -1,0 +1,14 @@
+<div>
+    Index Page
+    <div onclick="GetUser()">
+        Me!
+    </div>
+</div>
+
+<script>
+    async function GetUser(){
+        const u = await fetch("/me");
+        const uj = await u.json()
+        console.log(uj);
+    }
+</script>

@@ -29,6 +29,9 @@ def sign_out():
 
 @auth_blueprint.get("/signin/<string:provider>")
 def signin_with_provider(provider: str):
+    origin_url = flask.session.get("origin_url")
+    if not origin_url:
+        return "no origin URL supplied, cant log in", 400
     signin_url_generator = SIGNIN_URL_GENERATORS.get(provider)
     if not signin_url_generator:
         return "unsupported provider", 401
@@ -38,6 +41,10 @@ def signin_with_provider(provider: str):
 
 @auth_blueprint.get("/callback/<string:provider>")
 def signin_callback(provider: str):
+    origin_url = flask.session.get("origin_url")
+    if not origin_url:
+        return "no origin URL supplied, cant log in", 400
+    
     code_handler = CODE_HANDLER_GENERATORS.get(provider)
     if not code_handler:
         return "unsupported provider", 401
@@ -62,12 +69,15 @@ def signin_callback(provider: str):
     if not user:
         return "something went wrong"
 
-    server_session = utils.session.create_new_session(user)
+    server_session = utils.session.create_user_server_session(user)
     if not server_session:
         return "could not assign session"
     
     flask.session["server_session_value"] = server_session.value
-    session_data = utils.session.create_user_session_dict(server_session.value)
+    session_data = utils.session.get_user_server_session(server_session.value)
     if not session_data:
         return "could not construct session data"
-    return flask.jsonify(session_data)
+    
+    # TODO should redirect the user back to their origin
+    print(origin_url)
+    return flask.redirect(origin_url)
