@@ -43,6 +43,7 @@ class Database:
         id = sql.Column(sql.Integer, unique=True, primary_key=True)
         user_id = sql.Column(sql.Integer)
         value = sql.Column(sql.String)
+        hash = sql.Column(sql.String)
         created_at = sql.Column(sql.DateTime, default=datetime.datetime.utcnow)
         expires_at = sql.Column(sql.DateTime, default=lambda: datetime.datetime.utcnow() + datetime.timedelta(hours=1))
     
@@ -108,6 +109,25 @@ class Database:
     def get_session_from_value(self, session_value: str) -> Session | None:
         with self.SessionMaker() as session:
             s = session.query(self.Session).where(self.Session.value == session_value).first()
+        if not s:
+            return None
+        if s.expires_at < datetime.datetime.utcnow():
+            with self.SessionMaker() as session:
+                session.delete(s)
+                session.commit()
+            return None
+        return s
+    
+    def get_session_from_hash(self, session_hash: str) -> Session | None:
+        with self.SessionMaker() as session:
+            s = session.query(self.Session).where(self.Session.hash == session_hash).first()
+        if not s:
+            return None
+        if s.expires_at < datetime.datetime.utcnow():
+            with self.SessionMaker() as session:
+                session.delete(s)
+                session.commit()
+            return None
         return s
     
     def update_session(self, server_session: Session) -> Session | None:
@@ -122,6 +142,8 @@ class Database:
         server_session = self.Session()
         server_session.user_id = user_id
         server_session.value = value
+        random_seed = utils.crypt.random_string()
+        server_session.hash = utils.crypt.hash_string(random_seed)
         with self.SessionMaker() as session:
             session.add(server_session)
             session.commit()

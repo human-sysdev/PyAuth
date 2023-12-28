@@ -23,8 +23,15 @@ USER_RETRIEVER_GENERATORS = {
 
 @auth_blueprint.get("/signout")
 def sign_out():
+    # TODO remove session
     flask.session.clear()
     return "signed out"
+
+@auth_blueprint.get("/signout/all")
+def sign_out_all():
+    # TODO remove all sessions
+    flask.session.clear()
+    return "signed out from all devices"
 
 
 @auth_blueprint.get("/signin/<string:provider>")
@@ -69,15 +76,9 @@ def signin_callback(provider: str):
     if not user:
         return "something went wrong"
 
-    server_session = utils.session.create_user_server_session(user)
+    server_session = utils.session.create_user_session(user)
     if not server_session:
         return "could not assign session"
     
     flask.session["server_session_value"] = server_session.value
-    session_data = utils.session.get_user_server_session(server_session.value)
-    if not session_data:
-        return "could not construct session data"
-    
-    # TODO should redirect the user back to their origin
-    print(origin_url)
     return flask.redirect(origin_url)
