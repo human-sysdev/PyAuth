@@ -39,6 +39,8 @@ any existing data **WILL BE LOST**
 
 -- if you need server validation --
 
+(adding app registration might be a decent idea here)
+
 3. the user forwards its information to the server
    1. give the server the `user_id` and `session_hash`
 4. the server gets the userdata from the service
