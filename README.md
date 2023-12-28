@@ -36,7 +36,9 @@ any existing data **WILL BE LOST**
 2. the user gets its identiy from the service
    1. send a GET request to `service/me` and include credentials
    2. the server responds with a JSON object holding the userdata
+
 -- if you need server validation --
+
 3. the user forwards its information to the server
    1. give the server the `user_id` and `session_hash`
 4. the server gets the userdata from the service
