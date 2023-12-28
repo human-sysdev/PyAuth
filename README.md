@@ -15,6 +15,7 @@ an example could look like this:
 ENVIRONMENT=DEV
 DB_PATH=./dev.db
 SERVER_URL=http://localhost:3000
+SERVER_SECRET=xxxxxxxxxxxxx
 GITHUB_CLIENT_ID=xxxxxxxxxxxxx
 GITHUB_CLIENT_SECRET=xxxxxxxxxxxxx
 ```
@@ -23,6 +24,6 @@ GITHUB_CLIENT_SECRET=xxxxxxxxxxxxx
 before running the service, make sure the DB exists,
 if one has not been made you can use the `db_push.py`
 file to create one. take note that this action will remove all
-pre-existing data and is a hard reset of the database.
+pre-existing data and will hard reset any existing database.
 
 any existing data **WILL BE LOST**
