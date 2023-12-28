@@ -78,6 +78,11 @@ class Database:
             user = session.query(self.User).where(self.User.snowflake == snowflake).first()
         return user
     
+    def get_user_by_id(self, id: int) -> User | None:
+        with self.SessionMaker() as session:
+            user = session.query(self.User).where(self.User.id == id).first()
+        return user
+    
     def update_user(self, user: User):
         if not user.id:
             RuntimeError("DB: Tried Updating User with non-existent ID")
@@ -99,3 +104,25 @@ class Database:
             session.add(user)
             session.commit()
         return user
+
+    def get_session_from_value(self, session_value: str) -> Session | None:
+        with self.SessionMaker() as session:
+            s = session.query(self.Session).where(self.Session.value == session_value).first()
+        return s
+    
+    def update_session(self, server_session: Session) -> Session | None:
+        if not server_session.id:
+            RuntimeError("DB: Tried Updating Session with non-existent ID")
+        with self.SessionMaker() as session:
+            session.add(server_session)
+            session.commit()
+        return server_session
+
+    def create_new_session(self, user_id: int, value: str) -> Session:
+        server_session = self.Session()
+        server_session.user_id = user_id
+        server_session.value = value
+        with self.SessionMaker() as session:
+            session.add(server_session)
+            session.commit()
+        return server_session

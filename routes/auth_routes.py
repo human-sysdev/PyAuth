@@ -1,5 +1,6 @@
 import flask
 import providers.github
+import utils.session
 
 auth_blueprint = flask.Blueprint("auth_blueprint", __name__)
 
@@ -11,7 +12,7 @@ CODE_HANDLER_GENERATORS = {
     "github": providers.github.append_signin_code,
 }
 
-TOKEN_RETRIEVER_GENERATORS = {
+TOKEN_HANDLER_GENERATORS = {
     "github": providers.github.retrieve_github_token,
 }
 
@@ -20,8 +21,14 @@ USER_RETRIEVER_GENERATORS = {
 }
 
 
+@auth_blueprint.get("/signout")
+def sign_out():
+    flask.session.clear()
+    return "signed out"
+
+
 @auth_blueprint.get("/signin/<string:provider>")
-def github_request_identity(provider: str):
+def signin_with_provider(provider: str):
     signin_url_generator = SIGNIN_URL_GENERATORS.get(provider)
     if not signin_url_generator:
         return "unsupported provider", 401
@@ -30,7 +37,7 @@ def github_request_identity(provider: str):
 
 
 @auth_blueprint.get("/callback/<string:provider>")
-def github_request_identity_callback(provider: str):
+def signin_callback(provider: str):
     code_handler = CODE_HANDLER_GENERATORS.get(provider)
     if not code_handler:
         return "unsupported provider", 401
@@ -39,7 +46,7 @@ def github_request_identity_callback(provider: str):
     if not login_request:
         return "something went wrong"
 
-    token_handler = TOKEN_RETRIEVER_GENERATORS.get(provider)
+    token_handler = TOKEN_HANDLER_GENERATORS.get(provider)
     if not token_handler:
         return "unsupported provider", 401
     
@@ -55,12 +62,12 @@ def github_request_identity_callback(provider: str):
     if not user:
         return "something went wrong"
 
-    # create a session for the user
-
-    return f"""
-    <img src='{user.pfp}' />
-    <div>{user.username}</div>
-    <div>{user.email}</div>
-    <div>{user.provider}</div>
-    <div>{user.created_at}</div>
-    """
+    server_session = utils.session.create_new_session(user)
+    if not server_session:
+        return "could not assign session"
+    
+    flask.session["server_session_value"] = server_session.value
+    session_data = utils.session.create_user_session_dict(server_session.value)
+    if not session_data:
+        return "could not construct session data"
+    return flask.jsonify(session_data)
