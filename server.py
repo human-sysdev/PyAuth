@@ -11,8 +11,9 @@ import routes.view_routes
 dotenv.load_dotenv()
 
 server = flask.Flask(__name__)
-cors = flask_cors.CORS(server, supports_credentials=True)
 server.secret_key = os.getenv("SERVER_SECRET")
+server.config["SESSION_COOKIE_SECURE"] = True
+cors = flask_cors.CORS(server, supports_credentials=True, )
 
 server.register_blueprint(routes.auth_routes.auth_blueprint)
 server.register_blueprint(routes.identity_routes.identity_blueprint)
