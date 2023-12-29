@@ -1,5 +1,6 @@
 import flask
 import utils.session
+import base64
 
 identity_blueprint = flask.Blueprint("identity_blueprint", __name__)
 
@@ -20,6 +21,14 @@ def get_foreign_user(id: int):
     foreign_user_data = utils.session.get_foreign_user_data(id)
     return flask.jsonify(foreign_user_data)
     
+
+@identity_blueprint.get("/key")
+def get_public_key():
+    with open("pub.pem", "rb") as file:
+        public_key = file.read()
+    public_key = base64.b64encode(public_key).decode("ascii")
+    return public_key
+
 
 # @identity_blueprint.post("/me/server")
 # def get_server_identity():

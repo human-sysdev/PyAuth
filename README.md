@@ -37,12 +37,30 @@ any existing data **WILL BE LOST**
    1. send a GET request to `service/me` and include credentials
    2. the server responds with a JSON object holding the userdata
 
--- if you need server validation --
+## Trusting the client
+the session is set on the client, that means you have to at least to some
+extent trust that the client is honest about who they are.
 
-(adding app registration might be a decent idea here)
+one way of ensuring that the client is beeing honest is by comparing the signature
+of the service, the auth service sends back both a session hash which is randomly
+generated, and a RSA signed signature of that hash, by verifying
+the signature using the services public key you can confirm that the hash
+and by extension the session has not been tampered with.
 
-3. the user forwards its information to the server
-   1. give the server the `user_id` and `session_hash`
-4. the server gets the userdata from the service
-   1. the server sends a json POST to `service/me/server`
-   2. if a session exists with the right hash and id, the server returns the user data
+an example of verifying the signature:
+
+```ts
+export async function VerifySignature(userData: PyAuthUserData) {
+    // get and decode the public key
+    const publicKeyResponse = await fetch("http://localhost:3000/key");
+    const publicKeyB64 = await publicKeyResponse.text();
+    const publicKeyBuffer = Buffer.from(publicKeyB64, "base64");
+    // decode the signature
+    const signature = Buffer.from(userData.session_signature, "base64");
+    // actual verification
+    const verify = createVerify("RSA-SHA256");
+    verify.update(userData.session_hash);
+    const isValid = verify.verify(publicKeyBuffer, signature);
+    return isValid;
+}
+```

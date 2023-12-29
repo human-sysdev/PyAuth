@@ -1,8 +1,9 @@
 # custom
+.vscode/
 Scripts/
 Include/
 **.db
-.vscode/
+**.pem
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
