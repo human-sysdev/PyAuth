@@ -20,6 +20,12 @@ GITHUB_CLIENT_ID=xxxxxxxxxxxxx
 GITHUB_CLIENT_SECRET=xxxxxxxxxxxxx
 ```
 
+## .PEM
+The server needs access to a public and private RSA key,
+these should be stored in the project root as priv.pem and
+pub.pem, for development purposes you can make a set of test-keys
+using [this generator](https://cryptotools.net/rsagen)
+
 ## Running the service
 before running the service, make sure the DB exists,
 if one has not been made you can use the `db_push.py`
@@ -36,6 +42,33 @@ any existing data **WILL BE LOST**
 2. the user gets its identiy from the service
    1. send a GET request to `service/me` and include credentials
    2. the server responds with a JSON object holding the userdata
+
+this can also be set up as a hook if you're using react/next etc:
+
+```ts
+const usePyAuth = (refresh?: any) => {
+    const [isLoading, setLoading] = useState(false);
+    const [userData, setUserData] = useState<PyAuthUserData | null>(null);
+    const [error, setError] = useState<unknown | null>(null);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            setLoading(true);
+            const response = await fetch("http://localhost:3000/me", {
+                credentials: "include"
+            });
+            try {
+                const responseJson = await response.json() as PyAuthUserData;
+                setUserData(responseJson);
+            } catch (err) { setError(err) }
+            setLoading(false);
+        }
+        fetchUser();
+    }, [refresh])
+
+    return { userData, error, isLoading };
+}
+```
 
 ## Trusting the client
 the session is set on the client, that means you have to at least to some
