@@ -27,7 +27,6 @@ def verify_signature(data: str, signature: str) -> bool:
     signature: bytes = base64.b64decode(signature)
     with open("pub.pem", "rb") as key_file:
         public_key = key_file.read()
-        print(public_key)
     public_key = rsa.PublicKey.load_pkcs1_openssl_pem(public_key)
     valid = rsa.verify(data.encode(), signature, public_key)
     return valid
@@ -35,5 +34,4 @@ def verify_signature(data: str, signature: str) -> bool:
 def get_public_key() -> str:
     with open("pub.pem", "r") as key_file:
         public_key = key_file.read()
-    print(public_key)
     return public_key

@@ -555,12 +555,32 @@ textarea {
   position: static;
 }
 
+.m-auto {
+  margin: auto;
+}
+
 .block {
   display: block;
 }
 
+.flex {
+  display: flex;
+}
+
 .grid {
   display: grid;
+}
+
+.h-24 {
+  height: 6rem;
+}
+
+.h-36 {
+  height: 9rem;
+}
+
+.w-full {
+  width: 100%;
 }
 
 .grid-cols-2 {
@@ -569,6 +589,10 @@ textarea {
 
 .gap-12 {
   gap: 3rem;
+}
+
+.gap-20 {
+  gap: 5rem;
 }
 
 .pb-12 {
@@ -585,6 +609,23 @@ textarea {
 
 .text-center {
   text-align: center;
+}
+
+.italic {
+  font-style: italic;
+}
+
+.text-blue-700 {
+  --tw-text-opacity: 1;
+  color: rgb(29 78 216 / var(--tw-text-opacity));
+}
+
+.underline {
+  text-decoration-line: underline;
+}
+
+.opacity-50 {
+  opacity: 0.5;
 }
 
 body {
