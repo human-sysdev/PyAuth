@@ -32,7 +32,8 @@ def verify_signature(data: str, signature: str) -> bool:
     valid = rsa.verify(data.encode(), signature, public_key)
     return valid
 
-
-signature = sign_string("test")
-valid = verify_signature("test", signature)
-print(valid)
+def get_public_key() -> str:
+    with open("pub.pem", "r") as key_file:
+        public_key = key_file.read()
+    print(public_key)
+    return public_key

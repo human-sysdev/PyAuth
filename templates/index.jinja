@@ -1,14 +1,26 @@
-<div>
-    Index Page
+{% extends "base.jinja" %}
+
+{% block body %}
+<main>
+
+    <h1 class="text-center pb-12">
+        Welcome To PyAuth!
+    </h1>
+
+    <div class="grid grid-cols-2 gap-12">
+        <div>
+           {% include "components/about.jinja" %}
+        </div>
+        <div>
+            {% include "components/public_key.jinja" %}
+        </div>
+    </div>
+
     <div onclick="GetUser()">
         Me!
     </div>
-</div>
+</main>
 
-<script>
-    async function GetUser() {
-        const u = await fetch("/me")
-        const uj = await u.json()
-        console.log(uj);
-    }
+<script src="{{url_for('static', filename='main.js')}}">
 </script>
+{% endblock body %}
