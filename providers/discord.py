@@ -1,38 +1,43 @@
-import dotenv
-import flask
 import os
-import requests
 import urllib.parse
-
+import dotenv
+import requests
 import utils.database
+
+_REDIRECT_URI = f"{os.getenv('SERVER_URL')}/callback/discord"
 
 dotenv.load_dotenv()
 
-
 def get_signin_url() -> str:
     login_request = utils.database.Database().create_new_login_request()
-    url = "https://github.com/login/oauth/authorize"
+    url = "https://discord.com/oauth2/authorize"
     params = {
-        "client_id": os.getenv("GITHUB_CLIENT_ID"),
+        "response_type": "code",
+        "client_id": os.getenv("DISCORD_CLIENT_ID"),
         "state": login_request.state,
-        "scope": "user:email",
-        "redirect_uri": f"{os.getenv('SERVER_URL')}/callback/github"
+        "scope": "email identify",
+        "redirect_uri": _REDIRECT_URI,
+        "prompt": "none"
     }
     url = f"{url}?{urllib.parse.urlencode(params)}"
+    print("Returned the discord URL")
     return url
 
 
-def retrieve_github_token(login_request: utils.database.Database.LoginRequest) -> utils.database.Database.LoginRequest | None:
-    post_url = "https://github.com/login/oauth/access_token"
+def retrieve_discord_token(login_request: utils.database.Database.LoginRequest) -> utils.database.Database.LoginRequest | None:
+    print("Trying to retrieve the token")
+    post_url = "https://discord.com/api/oauth2/token"
     post_data = {
-        "client_id": os.getenv('GITHUB_CLIENT_ID'),
-        "client_secret": os.getenv('GITHUB_CLIENT_SECRET'),
+        "grant_type": "authorization_code",
         "code": login_request.code,
+        "redirect_uri": _REDIRECT_URI,
     }
     post_headers = {
-        "Accept": "application/json"
+        'Content-Type': 'application/x-www-form-urlencoded'
     }
-    token = requests.post(post_url, data=post_data, headers=post_headers)
+    client_id = os.getenv("DISCORD_CLIENT_ID")
+    client_secret = os.getenv("DISCORD_CLIENT_SECRET")
+    token = requests.post(post_url, data=post_data, headers=post_headers, auth=(client_id, client_secret))
     token = dict(token.json())
     token = token.get("access_token")
     if not token:
@@ -43,32 +48,24 @@ def retrieve_github_token(login_request: utils.database.Database.LoginRequest) -
     return login_request
 
 
-def get_github_user(login_request: utils.database.Database.LoginRequest):
+def get_discord_user(login_request: utils.database.Database.LoginRequest):
     if not login_request.token:
         return None
     
-    url = "https://api.github.com/user"
-    email_url = "https://api.github.com/user/emails"
+    url = "https://discord.com/api/users/@me"
     headers = {
         "Authorization": f"Bearer {login_request.token}"
     }
     user_info = requests.get(url, headers=headers)
-    user_emails = requests.get(email_url, headers=headers)
     user_info = dict(user_info.json())
-    user_emails = list([dict(entry) for entry in list(user_emails.json())])
+    print(user_info)
 
-    email: str = next(
-        (entry.get("email") for entry in user_emails if entry.get("primary") == True), 
-        user_emails[0].get("email")
-        )
-    
-    if not email:
-        return None
-    
-    pfp = user_info.get("avatar_url")
-    username = user_info.get("login")
-    provider = "github"
+    email = user_info.get("email")    
+    username = user_info.get("username")
+    provider = "discord"
     provider_id = user_info.get("id")
+    pfp = user_info.get("avatar")
+    pfp = f"https://cdn.discordapp.com/avatars/{provider_id}/{pfp}.png"
     snowflake = f"{provider}{provider_id}"
 
     user = utils.database.Database().get_user_by_snowflake(snowflake)

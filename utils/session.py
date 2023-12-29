@@ -29,6 +29,7 @@ def get_user_session(session_value: str) -> dict | None:
         "user_username": user.username,
         "user_created_at": user.created_at,
         "user_email": user.email,
+        "user_provider": user.provider,
         "session_hash": user_session.hash,
         "session_signature": utils.crypt.sign_string(user_session.hash),
         "session_expires_at": user_session.expires_at,
