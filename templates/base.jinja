@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="icon" type="image/png" href="{{url_for('static', filename='media/logo_transparent.png')}}">
     <title>
         {% block title %}
         PyAuth
@@ -13,7 +14,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/tw.css') }}" />
 </head>
 
-<body>
+<body class="px-4 lg:px-[25%] md:px-[10%]">
     {% block body %}
 
     {% endblock body %}

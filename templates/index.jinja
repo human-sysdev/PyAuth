@@ -2,33 +2,68 @@
 
 {% block body %}
 <main>
-
     <div class="flex w-full">
-        <img class="m-auto h-36" src="{{url_for('static', filename='media/logo_transparent.png')}}" />
+        <img class="m-auto h-28" src="{{url_for('static', filename='media/logo_transparent.png')}}" />
     </div>
-    <h1 class="text-center">
+    <h1 class="text-center pb-12">
         Welcome To PyAuth!
     </h1>
 
-    <p class="pb-12 italic opacity-50">
-        * Not to be confused 
-        with <a class="underline text-blue-700" href="https://pypi.org/project/PyAuth/" target="_blank">PyPI - PyAuth</a>
-    </p>
 
-    <div class="grid grid-cols-2 gap-20">
-        <div>
-            {% include "components/about.jinja" %}
+
+    <div id="selector">
+        <div class="flex justify-evenly">
+            <div class="w-full m-auto px-[2px] pt-[2px] bg-black">
+                <button id="user-about-selector" class="w-full bg-white p-4"
+                onclick="ToggleUserAbout()">
+                    For users
+                </button>
+            </div>
+            <div class="w-full m-auto pr-[2px] pt-[2px] bg-black">
+                <button id="developer-about-selector" class="w-full p-4 bg-gray-200"
+                onclick="ToggleDeveloperAbout()">
+                    For Developers
+                </button>
+            </div>
         </div>
-        <div>
-            {% include "components/public_key.jinja" %}
+        <div id="user-about-display" class="p-2 pt-6">
+            {% include "components/user_about.jinja" %}
+        </div>
+        <div id="developer-about-display" class="p-2 pt-6 hidden">
+            {% include "components/developer_about.jinja" %}
         </div>
     </div>
+    {# {% include "components/public_key.jinja" %} #}
 
-    {# <div onclick="GetUser()">
-        Me!
-    </div> #}
+    <p class="pb-12 italic opacity-50 pt-12">
+        * Not to be confused
+        with <a class="underline whitespace-nowrap text-blue-700" href="https://pypi.org/project/PyAuth/"
+            target="_blank">PyPI - PyAuth</a>
+    </p>
+
+
+    <script>
+        function ToggleDeveloperAbout(){
+            document.querySelector("#user-about-display").classList.toggle("hidden", true);
+            document.querySelector("#user-about-selector").classList.toggle("bg-gray-200", true);
+            document.querySelector("#user-about-selector").classList.toggle("bg-white", false);
+
+            document.querySelector("#developer-about-display").classList.toggle("hidden", false);
+            document.querySelector("#developer-about-selector").classList.toggle("bg-gray-200", false);
+            document.querySelector("#developer-about-selector").classList.toggle("bg-white", true);
+        };
+
+        function ToggleUserAbout(){
+            document.querySelector("#user-about-display").classList.toggle("hidden", false);
+            document.querySelector("#user-about-selector").classList.toggle("bg-gray-200", false);
+            document.querySelector("#user-about-selector").classList.toggle("bg-white", true);
+
+            document.querySelector("#developer-about-display").classList.toggle("hidden", true);
+            document.querySelector("#developer-about-selector").classList.toggle("bg-gray-200", true);
+            document.querySelector("#developer-about-selector").classList.toggle("bg-white", false);
+        };
+
+        ToggleUserAbout();
+    </script>
 </main>
-
-<script src="{{url_for('static', filename='js\main.js')}}">
-</script>
 {% endblock body %}
