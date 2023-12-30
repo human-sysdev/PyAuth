@@ -1,5 +1,7 @@
 # Auth
 
+![logo_transparent](https://github.com/Nyan-Doggo/PyAuth/assets/70441087/731afe91-139d-4f58-89e4-126518006699)
+
 WIP
 
 A simple service that aims to implement OAuth from different providers and function
