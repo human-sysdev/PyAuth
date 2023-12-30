@@ -9,10 +9,6 @@ body {
 }
 
 @layer components{
-    body {
-        @apply p-12;
-    }
-
     h1 {
         @apply text-3xl font-bold;
     }
