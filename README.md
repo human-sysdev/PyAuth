@@ -15,15 +15,17 @@ an example could look like this:
 ENVIRONMENT=DEV
 DB_PATH=./dev.db
 SERVER_URL=http://localhost:3000
-SERVER_SECRET=xxxxxxxxxxxxx
-GITHUB_CLIENT_ID=xxxxxxxxxxxxx
-GITHUB_CLIENT_SECRET=xxxxxxxxxxxxx
+SERVER_SECRET=xxxxyyyyzzzz
+GITHUB_CLIENT_ID=xxxxyyyyzzzz
+GITHUB_CLIENT_SECRET=xxxxyyyyzzzz
+DISCORD_CLIENT_ID=xxxxyyyyzzzz
+DISCORD_CLIENT_SECRET=xxxxyyyyzzzz
 ```
 
 ## .PEM
 The server needs access to a public and private RSA key,
-these should be stored in the project root as priv.pem and
-pub.pem, for development purposes you can make a set of test-keys
+these should be stored in the project root as `priv.pem` and
+`pub.pem`, for development purposes you can make a set of test-keys
 using [this generator](https://cryptotools.net/rsagen)
 
 ## Running the service
@@ -34,16 +36,62 @@ pre-existing data and will hard reset any existing database.
 
 any existing data **WILL BE LOST**
 
-## Process
-1. the user aquires a session from the service
-   1. Forward the user to `service/login?redirect_url=origin`
-   2. the user goes through OAuth
-   3. the user is returned to origin
-2. the user gets its identiy from the service
-   1. send a GET request to `service/me` and include credentials
-   2. the server responds with a JSON object holding the userdata
+## Process - TLDR
+*Too long didnt read*
 
-this can also be set up as a hook if you're using react/next etc:
+this serves as a refresher, make sure to read the actual implementation description as well
+
+1. the user aquires a PyAuth session from `pyauth.com/login`
+2. the user gets its data from `pyauth.com/me`
+3. the application compares the session_signature against the key at `pyauth.com/key`
+
+## Process - NATLMISRI
+*Not actually that long maybe i should read it*
+
+1. the user aquires a session from the service
+
+the user needs to be redirected to `https://pyauth.com/login`,
+at least one additional URL parameter **MUST** be included.
+
+the possible parameters are: `redirect_url` and `behalf_of`,
+
+* `redirect_url` is REQUIRED, and must be a URL encoded string pointing
+back to your application, this is where the user will be sent after logging in. 
+* `behalf_of` is OPTIONAL and will display on the `/login` page. "log in to {{ behalf_of }}"
+
+a actual URL would look like this `https://pyauth.com/login?redirect_url=https%3A%2F%2Fpyauth.com%2Fme&behalf_of=pyauth`
+
+2. the user gets its identiy from the service
+
+when the user has a valid session, they can send a GET request to `https://pyauth.com/me`
+(no parameters are required nor supported) and they will get a JSON object back,
+the json object looks like this:
+
+```json
+{
+    "session_created_at": "Sat, 24 Dec 2023 00:00:00 GMT",
+    "session_expires_at": "Sat, 24 Dec 2023 01:00:00 GMT",
+    "session_hash": "123abc_this_is_a_string_abc123",
+    "session_signature": "123abc_this_is_a_signature_of_the_session_hash_abc123",
+    "user_created_at": "Sat, 24 Dec 2023 00:00:00 GMT",
+    "user_email": "mail@pyauth.com",
+    "user_id": 1,
+    "user_pfp": "https://avatars.pyauth.com/1",
+    "user_provider": "pyauth",
+    "user_username": "user@pyauth"
+}
+```
+
+3. the service or application can verify the signature
+
+The service or application gets a copy of the current public key from the service
+by sending a GET request to `https://pyauth.com/key`, this returns a text-response
+with the public RSA key. it then becomes the responsibility of the Application
+to use this public RSA key to confirm that the `session_signature` is a valid
+signature of the `session_hash`.
+
+## Code Examples
+Retrieving user information can be set up as a hook if you're using react/next etc:
 
 ```ts
 const usePyAuth = (refresh?: any) => {
@@ -69,16 +117,6 @@ const usePyAuth = (refresh?: any) => {
     return { userData, error, isLoading };
 }
 ```
-
-## Trusting the client
-the session is set on the client, that means you have to at least to some
-extent trust that the client is honest about who they are.
-
-one way of ensuring that the client is beeing honest is by comparing the signature
-of the service, the auth service sends back both a session hash which is randomly
-generated, and a RSA signed signature of that hash, by verifying
-the signature using the services public key you can confirm that the hash
-and by extension the session has not been tampered with.
 
 an example of verifying the signature:
 

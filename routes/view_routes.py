@@ -14,10 +14,16 @@ def index():
 
 @view_blueprint.get("/login")
 def login():
-    origin_url = flask.request.args.get("redirect_url")
-    behalf_of = flask.request.args.get("behalf_of")
+    origin_url = flask.request.args.get("redirect")
+    callback_url = flask.request.args.get("callback")
+    state_value = flask.request.args.get("state")
+    if None in [origin_url, callback_url, state_value]:
+        return "Missing arguments"
+    behalf_of = flask.request.args.get("from")
     # if not redirect_url:
     #    return "No valid redirect URL"
     flask.session["origin_url"] = origin_url
+    flask.session["callback_url"] = callback_url
+    flask.session["state_value"] = state_value
     return flask.render_template("login.jinja", behalf_of=behalf_of, server_url=os.getenv("SERVER_URL"))
     

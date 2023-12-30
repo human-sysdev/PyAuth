@@ -22,19 +22,6 @@ USER_RETRIEVER_GENERATORS = {
 }
 
 
-@auth_blueprint.get("/signout")
-def sign_out():
-    # TODO remove session
-    flask.session.clear()
-    return "signed out"
-
-@auth_blueprint.get("/signout/all")
-def sign_out_all():
-    # TODO remove all sessions
-    flask.session.clear()
-    return "signed out from all devices"
-
-
 @auth_blueprint.get("/signin/<string:provider>")
 def signin_with_provider(provider: str):
     origin_url = flask.session.get("origin_url")
@@ -49,16 +36,15 @@ def signin_with_provider(provider: str):
 
 @auth_blueprint.get("/callback/<string:provider>")
 def signin_callback(provider: str):
-    print("got the callback")
     origin_url = flask.session.get("origin_url")
-    if not origin_url:
-        return "no origin URL supplied, cant log in", 400
-    print("got through the origin URL")
+    callback_url = flask.session.get("callback_url")
+    state_value = flask.session.get("state_value")
+    if None in [origin_url, callback_url, state_value]:
+        return "Error, missing arguments", 400
     
     login_request = providers.universal.append_signin_code(flask.request)
     if not login_request:
         return "could not verify OAuth CODE"
-    print("Retrieved the oauth code")
 
     token_handler = TOKEN_HANDLER_GENERATORS.get(provider)
     if not token_handler:
@@ -67,7 +53,6 @@ def signin_callback(provider: str):
     login_request = token_handler(login_request)
     if not login_request:
         return "something went wrong"
-    print("exchanged the oauth for a token")
 
     user_handler = USER_RETRIEVER_GENERATORS.get(provider)
     if not user_handler:
@@ -76,11 +61,14 @@ def signin_callback(provider: str):
     user = user_handler(login_request)
     if not user:
         return "something went wrong"
-    print("recieved the user data")
 
     server_session = utils.session.create_user_session(user)
     if not server_session:
         return "could not assign session"
     
     flask.session["server_session_value"] = server_session.value
+    
+    valid_post = providers.universal.post_user_data(server_session.value, state_value, callback_url)
+    if not valid_post:
+        return "invalid post"
     return flask.redirect(origin_url)

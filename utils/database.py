@@ -138,12 +138,11 @@ class Database:
             session.commit()
         return server_session
 
-    def create_new_session(self, user_id: int, value: str) -> Session:
+    def create_new_session(self, user_id: int, value: str, hash: str) -> Session:
         server_session = self.Session()
         server_session.user_id = user_id
         server_session.value = value
-        random_seed = utils.crypt.random_string()
-        server_session.hash = utils.crypt.hash_string(random_seed)
+        server_session.hash = hash
         with self.SessionMaker() as session:
             session.add(server_session)
             session.commit()
