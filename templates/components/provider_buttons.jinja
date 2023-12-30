@@ -1,5 +1,5 @@
 {% macro input(provider) %}
-<a href="http://localhost:3000/signin/{{provider}}">
+<a href="{{server_url}}/signin/{{provider}}">
     <div class="border-2 border-black p-4 text-center w-full">
         {% set logo_path = "media/provider_logos/" + provider + ".svg" %}
         <p>

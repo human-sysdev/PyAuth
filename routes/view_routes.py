@@ -1,5 +1,9 @@
 import flask
 import utils.crypt
+import os
+import dotenv
+
+dotenv.load_dotenv()
 
 view_blueprint = flask.Blueprint("view_blueprint", __name__)
 
@@ -15,5 +19,5 @@ def login():
     # if not redirect_url:
     #    return "No valid redirect URL"
     flask.session["origin_url"] = origin_url
-    return flask.render_template("login.jinja", behalf_of=behalf_of)
+    return flask.render_template("login.jinja", behalf_of=behalf_of, server_url=os.getenv("SERVER_URL"))
     
