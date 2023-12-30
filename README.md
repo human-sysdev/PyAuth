@@ -1,9 +1,10 @@
 # Auth
 
-WIP - THIS IS CURRENTLY WRONG
+WIP
 
-A simple api that aims to implement oauth from different providers and function
-as a universal gateway for user identification
+A simple service that aims to implement OAuth from different providers and function
+as a universal gateway for user identification. swapping out the complexity
+of managing multiple OAuth providers with a simple three-step process
 
 # Hosting your own version
 
@@ -85,6 +86,42 @@ PyAuth sends a POST request to the callback, providing the following information
     "session_expires_at": "2000-01-01 00:00:00.000000",
     "session_created_at": "2000-01-01 00:00:00.000000",
     "state": "provided_state"
+}
+```
+
+using NextJS, the POST route for recieving user information could be set up
+like this:
+
+```ts
+// app/api/callback/route.ts
+
+import { LogIn } from "@/actions/login";
+import { PyAuthUserData } from "@/types/PyAuthUserData";
+
+export async function POST(req: Request){
+    const userData = await req.json() as PyAuthUserData;
+    LogIn(userData); // implement "LogIn" however best fits your application
+    return new Response("recieved");
+}
+```
+
+the PyAuth user data can be typed as follows:
+
+```ts
+// tpyes/PyAuthUserData.ts
+
+export type PyAuthUserData = {
+    user_id: number,
+    user_pfp: string,
+    user_username: string,
+    user_created_at: string,
+    user_email: string,
+    session_hash: string,
+    user_provider: string,
+    session_signature: string,
+    session_expires_at: string,
+    session_created_at: string,
+    state: string
 }
 ```
 
