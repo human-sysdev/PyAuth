@@ -5,6 +5,8 @@ WIP - THIS IS CURRENTLY WRONG
 A simple api that aims to implement oauth from different providers and function
 as a universal gateway for user identification
 
+# Hosting your own version
+
 ## .ENV
 The service requires a .env file in the root directory to function,
 this file should at the bare minimum hold information about the hosted url,
@@ -36,94 +38,119 @@ pre-existing data and will hard reset any existing database.
 
 any existing data **WILL BE LOST**
 
-## Process - TLDR
-*Too long didnt read*
+# Auth Process:
 
-this serves as a refresher, make sure to read the actual implementation description as well
+The PyAuth Process aims to simplify the process of logging in with OAuth Providers
+by giving developers a layer of abstraction that removes the need to register
+applications in advance.
 
-1. the user aquires a PyAuth session from `pyauth.com/login`
-2. the user gets its data from `pyauth.com/me`
-3. the application compares the session_signature against the key at `pyauth.com/key`
+the process has 3 (4) steps to it that must be taken in order to complete authentication,
+the authentication process relies on having a backend and frontend for your
+service.
 
-## Process - NATLMISRI
-*Not actually that long maybe i should read it*
+## step 1: assign a state
+the backend generates a unique string and gives it to the client BEFORE
+logging in. this state will help verify the users identity
 
-1. the user aquires a session from the service
+## step 2: forward the client
+the frontend, or client, is forwarded to PyAuth, the URL MUST include three
+parameters, these are:
 
-the user needs to be redirected to `https://pyauth.com/login`,
-at least one additional URL parameter **MUST** be included.
+* `redirect`, the address the client will be returned to after OAuth completion
+* `callback`, the address PyAuth will send the user-data to
+* `state`, the generated unique state that associates a client with the relevant user-data
 
-the possible parameters are: `redirect_url` and `behalf_of`,
+a optional `from` parameter can be included, and will be showcased on the "log in" page if
+included.
 
-* `redirect_url` is REQUIRED, and must be a URL encoded string pointing
-back to your application, this is where the user will be sent after logging in. 
-* `behalf_of` is OPTIONAL and will display on the `/login` page. "log in to {{ behalf_of }}"
+the base url is `https://pyauth.com/login` and a full url should look like
+`https://pyauth.com/login?redirect=your_redirect&callback=your_callback%2Fapi%2Fcallback&state=generated_state`
 
-a actual URL would look like this `https://pyauth.com/login?redirect_url=https%3A%2F%2Fpyauth.com%2Fme&behalf_of=pyauth`
+## step 3A: client is returned
+the client gets returned to the `redirect` address once the OAuth process is complete
 
-2. the user gets its identiy from the service
-
-when the user has a valid session, they can send a GET request to `https://pyauth.com/me`
-(no parameters are required nor supported) and they will get a JSON object back,
-the json object looks like this:
+## step 3B: PyAuth Posts to callback
+PyAuth sends a POST request to the callback, providing the following information
 
 ```json
 {
-    "session_created_at": "Sat, 24 Dec 2023 00:00:00 GMT",
-    "session_expires_at": "Sat, 24 Dec 2023 01:00:00 GMT",
-    "session_hash": "123abc_this_is_a_string_abc123",
-    "session_signature": "123abc_this_is_a_signature_of_the_session_hash_abc123",
-    "user_created_at": "Sat, 24 Dec 2023 00:00:00 GMT",
-    "user_email": "mail@pyauth.com",
     "user_id": 1,
-    "user_pfp": "https://avatars.pyauth.com/1",
-    "user_provider": "pyauth",
-    "user_username": "user@pyauth"
+    "user_pfp": "https://cdn.provider.com/pfp/1",
+    "user_username": "provider-username",
+    "user_created_at": "2000-01-01 00:00:00.000000",
+    "user_email": "user@email.com",
+    "user_provider": "provider",
+    "session_hash": "session_hash",
+    "session_signature": "signature_of_session_hash",
+    "session_expires_at": "2000-01-01 00:00:00.000000",
+    "session_created_at": "2000-01-01 00:00:00.000000",
+    "state": "provided_state"
 }
 ```
 
-3. the service or application can verify the signature
+it is the application developers responsibility to verify the state, hash and signature,
+and associate this with the correct client.
 
-The service or application gets a copy of the current public key from the service
-by sending a GET request to `https://pyauth.com/key`, this returns a text-response
-with the public RSA key. it then becomes the responsibility of the Application
-to use this public RSA key to confirm that the `session_signature` is a valid
-signature of the `session_hash`.
+# (Optional, but recomended) Verifying the information
 
-## Code Examples
-Retrieving user information can be set up as a hook if you're using react/next etc:
+Verifying the information is a relatively simple process, and works in the following way:
+1. double check that the state does indeed originate from your service
+2. ensure that the hash is correct
+3. get the public key from pyauth
+4. verify using the public key that the signature is acurate
+
+how developers wish to verify the state is up to them. but it is recomended that
+the state is stored both in a location accesible to the Backend and in a seperate
+location tied to the frontend, typically the state would be set as a cookie
+for the client, and stored seperately in a database for futuer reference.
+
+## Verifying the hash
+the hash is a hex-digest of a SHA-256 hash, its input is a continues string
+made from joining `user_email`, `user_pfp`, `user_provider`, `user_username` and `state`.
+
+**note:** order matters for creating the hash. the string must be constructed in
+this specific order to have the right value
+
+validating the hash is done by combining the returned values into a single string,
+then hashing them and comparing the hash to the `session_hash` posted by PyAuth.
+
+following is an example function written in TS for NextJS that illustrates this process:
 
 ```ts
-const usePyAuth = (refresh?: any) => {
-    const [isLoading, setLoading] = useState(false);
-    const [userData, setUserData] = useState<PyAuthUserData | null>(null);
-    const [error, setError] = useState<unknown | null>(null);
+import { createHash } from "crypto";
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            setLoading(true);
-            const response = await fetch("http://localhost:3000/me", {
-                credentials: "include"
-            });
-            try {
-                const responseJson = await response.json() as PyAuthUserData;
-                setUserData(responseJson);
-            } catch (err) { setError(err) }
-            setLoading(false);
-        }
-        fetchUser();
-    }, [refresh])
-
-    return { userData, error, isLoading };
+export async function VerifyHash(userData: PyAuthUserData){
+    // construct the basis for the hash_string
+    let user_hash = `${userData.user_id}`;
+    user_hash = user_hash + `${userData.user_email}`;
+    user_hash = user_hash + `${userData.user_pfp}`;
+    user_hash = user_hash + `${userData.user_provider}`;
+    user_hash = user_hash + `${userData.user_username}`;
+    user_hash = user_hash + `${userData.state}`
+    // get the hexdigest
+    const hash = createHash("sha256");
+    hash.update(user_hash);
+    const hash_digest = hash.digest("hex");
+    // compare to the submitted user data
+    const isValid = hash_digest == userData.session_hash;
+    return isValid;
 }
 ```
 
-an example of verifying the signature:
+## Get the public key and verify the signature:
+
+Getting and verifying the public key is a similarly straight forward process.
+first a GET request is sent to `https://pyauth.com/key`, the KEY is returned
+as base64 encoded text. the key can then be parsed and used to verify the signature,
+
+following is an example function written in TS for NextJS that illustrates this process:
 
 ```ts
+import { createVerify } from "crypto";
+
 export async function VerifySignature(userData: PyAuthUserData) {
     // get and decode the public key
-    const publicKeyResponse = await fetch("http://localhost:3000/key");
+    const publicKeyResponse = await fetch("https://pyauth.com/key");
     const publicKeyB64 = await publicKeyResponse.text();
     const publicKeyBuffer = Buffer.from(publicKeyB64, "base64");
     // decode the signature

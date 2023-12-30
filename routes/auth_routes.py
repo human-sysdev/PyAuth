@@ -25,8 +25,10 @@ USER_RETRIEVER_GENERATORS = {
 @auth_blueprint.get("/signin/<string:provider>")
 def signin_with_provider(provider: str):
     origin_url = flask.session.get("origin_url")
-    if not origin_url:
-        return "no origin URL supplied, cant log in", 400
+    callback_url = flask.session.get("callback_url")
+    state_value = flask.session.get("state_value")
+    if None in [origin_url, callback_url, state_value]:
+        return "Error, missing arguments", 400
     signin_url_generator = SIGNIN_URL_GENERATORS.get(provider)
     if not signin_url_generator:
         return "unsupported provider", 401
@@ -62,7 +64,7 @@ def signin_callback(provider: str):
     if not user:
         return "something went wrong"
 
-    server_session = utils.session.create_user_session(user)
+    server_session = utils.session.create_user_session(user, state_value)
     if not server_session:
         return "could not assign session"
     

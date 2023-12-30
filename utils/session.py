@@ -4,10 +4,10 @@ import utils.crypt
 import utils.database
 
 
-def create_user_session(user: utils.database.Database.User) -> utils.database.Database.Session | None:
+def create_user_session(user: utils.database.Database.User, state:str) -> utils.database.Database.Session | None:
     user_session_user_id = user.id
     user_session_value = utils.crypt.random_string()
-    user_session_hash = f"{user.id}{user.email}{user.pfp}{user.provider}{user.username}"
+    user_session_hash = f"{user.id}{user.email}{user.pfp}{user.provider}{user.username}{state}"
     user_session_hash = utils.crypt.hash_string(user_session_hash)
     user_session = utils.database.Database().create_new_session(
         user_id=user_session_user_id, 
