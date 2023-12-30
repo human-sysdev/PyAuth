@@ -1,0 +1,16 @@
+{% macro input(provider) %}
+<a href="http://localhost:3000/signin/{{provider}}">
+    <div class="border-2 border-black p-4 text-center w-full">
+        {% set logo_path = "media/provider_logos/" + provider + ".svg" %}
+        <p>
+            <img src="{{url_for('static', filename=logo_path)}}" class="inline h-8 pr-4"/>
+            Sign in with {{provider}}
+        </p>
+    </div>
+</a>
+{% endmacro %}
+
+<div class="grid gap-12 lg:px-[25%]">
+    {{ input("github") }}
+    {{ input("discord") }}
+</div>

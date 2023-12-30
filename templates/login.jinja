@@ -1,29 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.jinja" %}
 
-<style>
+{% block body %}
+<main>
 
-</style>
+    {% if behalf_of %}
+    <div class="text-center">
+        <img src="{{url_for('static', filename='media/logo_transparent.png')}}" class="m-auto h-36" />
+        <p>Powered by <a href="/" target="_blank" class="underline text-blue-700">PyAuth</a></p>
+        <h1 class="pb-12">Sign in to {{ behalf_of }}</h1>
+    </div>
+    {% else %}
+    <div>
+    </div>
+    {% endif %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>PyAuth ~ log in</title>
-</head>
-
-<body>
-    <main>
-        <div>
-            <a href="http://localhost:3000/signin/github">login with github</a>
-        </div>
-        <div>
-            <a href="http://localhost:3000/signin/discord">login with discord</a>
-        </div>
-    </main>
-
-    <script src="{{url_for('static', filename='main.js')}}">
-    </script>
-</body>
-
-</html>
+    {% include "components/provider_buttons.jinja" %}
+</main>
+{% endblock body %}
