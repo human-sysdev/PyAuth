@@ -20,8 +20,6 @@ def login():
     if None in [origin_url, callback_url, state_value]:
         return "Missing arguments"
     behalf_of = flask.request.args.get("from")
-    # if not redirect_url:
-    #    return "No valid redirect URL"
     flask.session["origin_url"] = origin_url
     flask.session["callback_url"] = callback_url
     flask.session["state_value"] = state_value

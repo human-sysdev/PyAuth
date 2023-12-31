@@ -16,8 +16,6 @@ def get_identity():
 
 @identity_blueprint.get("/user/<int:id>")
 def get_foreign_user(id: int):
-    if not flask.session.get("server_session_value"):
-        return "not logged in"
     foreign_user_data = utils.session.get_foreign_user_data(id)
     return flask.jsonify(foreign_user_data)
     
