@@ -13,15 +13,21 @@
 
     <div id="selector">
         <div class="flex justify-evenly">
-            <div class="w-full m-auto px-[2px] pt-[2px] bg-black">
-                <button id="user-about-selector" class="w-full bg-white p-4"
-                onclick="ToggleUserAbout()">
+            <div class="w-full m-auto px-[2px] pt-[2px] bg-black dark:bg-gray-600">
+                <button id="user-about-selector-innactive" class="w-full bg-white p-4 dark:bg-gray-950" onclick="ToggleUserAbout()">
+                    For users
+                </button>
+                <button id="user-about-selector-active" class="w-full bg-gray-200 p-4 dark:bg-gray-800" onclick="ToggleUserAbout()">
                     For users
                 </button>
             </div>
-            <div class="w-full m-auto pr-[2px] pt-[2px] bg-black">
-                <button id="developer-about-selector" class="w-full p-4 bg-gray-200"
-                onclick="ToggleDeveloperAbout()">
+            <div class="w-full m-auto pr-[2px] pt-[2px] bg-black dark:bg-gray-600">
+                <button id="developer-about-selector-innactive" class="w-full p-4 bg-white dark:bg-gray-950"
+                    onclick="ToggleDeveloperAbout()">
+                    For Developers
+                </button>
+                <button id="developer-about-selector-active" class="w-full p-4 bg-gray-200 dark:bg-gray-800"
+                    onclick="ToggleDeveloperAbout()">
                     For Developers
                 </button>
             </div>
@@ -37,30 +43,34 @@
 
     <p class="pb-12 italic opacity-50 pt-12">
         * Not to be confused
-        with <a class="underline whitespace-nowrap text-blue-700" href="https://pypi.org/project/PyAuth/"
-            target="_blank">PyPI - PyAuth</a>
+        with <a class="underline whitespace-nowrap text-blue-700 dark:text-blue-400"
+            href="https://pypi.org/project/PyAuth/" target="_blank">PyPI - PyAuth</a>
     </p>
 
 
     <script>
-        function ToggleDeveloperAbout(){
-            document.querySelector("#user-about-display").classList.toggle("hidden", true);
-            document.querySelector("#user-about-selector").classList.toggle("bg-gray-200", true);
-            document.querySelector("#user-about-selector").classList.toggle("bg-white", false);
+        function ToggleDisplayHidden(selector, hidden) {
+            document.querySelector(selector).classList.toggle("hidden", hidden)
+        }
 
-            document.querySelector("#developer-about-display").classList.toggle("hidden", false);
-            document.querySelector("#developer-about-selector").classList.toggle("bg-gray-200", false);
-            document.querySelector("#developer-about-selector").classList.toggle("bg-white", true);
+        function ToggleDeveloperAbout() {
+            ToggleDisplayHidden("#user-about-display", true);
+            ToggleDisplayHidden("#user-about-selector-innactive", true);
+            ToggleDisplayHidden("#user-about-selector-active", false);
+            
+            ToggleDisplayHidden("#developer-about-display", false);
+            ToggleDisplayHidden("#developer-about-selector-innactive", false);
+            ToggleDisplayHidden("#developer-about-selector-active", true);
         };
 
-        function ToggleUserAbout(){
-            document.querySelector("#user-about-display").classList.toggle("hidden", false);
-            document.querySelector("#user-about-selector").classList.toggle("bg-gray-200", false);
-            document.querySelector("#user-about-selector").classList.toggle("bg-white", true);
-
-            document.querySelector("#developer-about-display").classList.toggle("hidden", true);
-            document.querySelector("#developer-about-selector").classList.toggle("bg-gray-200", true);
-            document.querySelector("#developer-about-selector").classList.toggle("bg-white", false);
+        function ToggleUserAbout() {
+            ToggleDisplayHidden("#user-about-display", false);
+            ToggleDisplayHidden("#user-about-selector-innactive", false);
+            ToggleDisplayHidden("#user-about-selector-active", true);
+            
+            ToggleDisplayHidden("#developer-about-display", true);
+            ToggleDisplayHidden("#developer-about-selector-innactive", true);
+            ToggleDisplayHidden("#developer-about-selector-active", false);
         };
 
         ToggleUserAbout();
