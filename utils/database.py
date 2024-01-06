@@ -147,3 +147,12 @@ class Database:
             session.add(server_session)
             session.commit()
         return server_session
+    
+    def remove_request_data(self, request_id: int, session_id: int):
+        with self.SessionMaker() as session:
+            r = session.query(self.LoginRequest).where(self.LoginRequest.id == request_id).first()
+            s = session.query(self.Session).where(self.Session.id == session_id).first()
+            if r: session.delete(r)
+            if s: session.delete(s)
+            session.commit()
+        return

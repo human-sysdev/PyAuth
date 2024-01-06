@@ -20,12 +20,10 @@ def get_signin_url() -> str:
         "prompt": "none"
     }
     url = f"{url}?{urllib.parse.urlencode(params)}"
-    print("Returned the discord URL")
     return url
 
 
 def retrieve_discord_token(login_request: utils.database.Database.LoginRequest) -> utils.database.Database.LoginRequest | None:
-    print("Trying to retrieve the token")
     post_url = "https://discord.com/api/oauth2/token"
     post_data = {
         "grant_type": "authorization_code",
@@ -58,7 +56,6 @@ def get_discord_user(login_request: utils.database.Database.LoginRequest):
     }
     user_info = requests.get(url, headers=headers)
     user_info = dict(user_info.json())
-    print(user_info)
 
     email = user_info.get("email")    
     username = user_info.get("username")

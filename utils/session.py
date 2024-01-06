@@ -38,11 +38,3 @@ def get_user_session(session_value: str) -> dict | None:
         "session_expires_at": str(user_session.expires_at),
         "session_created_at": str(user_session.created_at),
     }
-
-def get_foreign_user_data(id: int) -> dict | None:
-    user = utils.database.Database().get_user_by_id(id)
-    return {
-        "user_id": user.id,
-        "user_pfp": user.pfp,
-        "user_username": user.username,
-    }

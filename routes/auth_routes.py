@@ -3,6 +3,7 @@ import providers.github
 import providers.discord
 import providers.universal
 import utils.session
+import utils.database
 
 auth_blueprint = flask.Blueprint("auth_blueprint", __name__)
 
@@ -73,4 +74,9 @@ def signin_callback(provider: str):
     valid_post = providers.universal.post_user_data(server_session.value, state_value, callback_url)
     if not valid_post:
         return "invalid post"
+    
+    # Delete "unnecessary" data and clear the cookie session
+    # before returning to the original application
+    utils.database.Database().remove_request_data(login_request.id, server_session.id)
+    flask.session.clear()
     return flask.redirect(origin_url)
